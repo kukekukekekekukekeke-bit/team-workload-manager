@@ -9,6 +9,7 @@ import { PeriodManager } from "@/components/features/PeriodManager";
 import { SettingsManager } from "@/components/features/SettingsManager";
 import { CSVExport } from "@/components/features/CSVExport";
 import { CSVImport } from "@/components/features/CSVImport";
+import { ServerSync } from "@/components/features/ServerSync";
 import { PlanSidebar } from "@/components/features/PlanSidebar";
 import { useMounted } from "@/hooks/use-mounted";
 import { useState } from "react";
@@ -41,6 +42,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-2">
                 <CSVExport />
+                <ServerSync />
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)}>
                   <Upload className="h-4 w-4 mr-2" />
                   CSVインポート

@@ -3,7 +3,27 @@ import { persist } from 'zustand/middleware';
 import { AppState, Member, Period, WorkLog } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
-export const useAppStore = create<AppState>()(
+interface AppStore extends AppState {
+    addPlan: (name: string) => void;
+    updatePlanName: (id: string, name: string) => void;
+    switchPlan: (id: string) => void;
+    deletePlan: (id: string) => void;
+    addMember: (member: Member) => void;
+    updateMember: (id: string, updates: Partial<Member>) => void;
+    deleteMember: (id: string) => void;
+    addPeriod: (period: Period) => void;
+    updatePeriod: (id: string, updates: Partial<Period>) => void;
+    deletePeriod: (id: string) => void;
+    addWorkLog: (log: WorkLog) => void;
+    updateWorkLog: (id: string, updates: Partial<WorkLog>) => void;
+    deleteWorkLog: (id: string) => void;
+    updateSettings: (settings: Partial<AppState['plans'][0]['settings']>) => void;
+    getMemberLogs: (memberId: string, periodId: string) => WorkLog[];
+    getMemberTotalHours: (memberId: string, periodId: string) => number;
+    importState: (state: AppState) => void;
+}
+
+export const useAppStore = create<AppStore>()(
     persist(
         (set, get) => ({
             plans: [],
@@ -158,6 +178,7 @@ export const useAppStore = create<AppState>()(
                 const logs = get().getMemberLogs(memberId, periodId);
                 return logs.reduce((sum, log) => sum + log.hours, 0);
             },
+            importState: (newState) => set(newState),
         }),
         {
             name: 'team-workload-storage',
