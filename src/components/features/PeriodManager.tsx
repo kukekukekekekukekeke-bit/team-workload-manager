@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Period } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { fetchHolidays, calculateWorkingDays, Holidays } from "@/lib/holidays";
-import { format, addDays, parseISO, differenceInDays } from "date-fns";
+import { format, addDays, parseISO, differenceInDays, isValid } from "date-fns";
 import { Trash2, Upload, Download, Calendar, Plus, Edit } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -379,7 +379,11 @@ export function PeriodManager() {
                 ) : (
                     periods.map((period) => {
                         const workingDays = calculateWorkingDays(period.startDate, period.endDate, holidays, settings);
-                        const totalDays = differenceInDays(parseISO(period.endDate), parseISO(period.startDate)) + 1;
+                        const start = parseISO(period.startDate);
+                        const end = parseISO(period.endDate);
+                        const totalDays = (isValid(start) && isValid(end))
+                            ? differenceInDays(end, start) + 1
+                            : 0;
 
                         return (
                             <Card key={period.id} className="hover:shadow-md transition-shadow">
@@ -395,9 +399,15 @@ export function PeriodManager() {
                                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                 <div className="flex items-center gap-2">
                                                     <Calendar className="h-4 w-4" />
-                                                    <span>{format(parseISO(period.startDate), "MMM d, yyyy")}</span>
+                                                    <span>{isValid(parseISO(period.startDate)) ? format(parseISO(period.startDate), "MMM d, yyyy") : "Invalid Start"}</span>
                                                     <span>→</span>
-                                                    <span>{format(parseISO(period.endDate), "MMM d, yyyy")}</span>
+                                                    <span>
+                                                        {period.endDate
+                                                            ? isValid(parseISO(period.endDate))
+                                                                ? format(parseISO(period.endDate), "MMM d, yyyy")
+                                                                : "Invalid End"
+                                                            : "—"}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <div className="mt-2 inline-flex items-center gap-2 text-sm">
