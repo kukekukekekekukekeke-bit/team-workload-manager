@@ -15,6 +15,18 @@ interface DBMS {
         settings: any;
     }>;
     activePlanId: string;
+    staging?: {
+        global?: {
+            periods?: Period[];
+            members?: Member[];
+            workLogs?: WorkLog[];
+        };
+        byPlan?: Record<string, { // Key is Plan Name
+            periods?: Period[];
+            members?: Member[];
+            workLogs?: WorkLog[];
+        }>;
+    };
 }
 
 const DEFAULT_DB: DBMS = {
@@ -65,6 +77,22 @@ export function saveActivePlan(db: DBMS, plan: any) {
             db.plans.push(plan);
             db.activePlanId = plan.id;
         }
+    }
+    writeDB(db);
+}
+
+export function saveStagingData(db: DBMS, data: any, planName?: string) {
+    if (!db.staging) {
+        db.staging = { global: {}, byPlan: {} };
+    }
+
+    if (planName) {
+        if (!db.staging.byPlan) db.staging.byPlan = {};
+        // Overwrite existing staging data for this plan to prevent duplicates/ accumulation
+        db.staging.byPlan[planName] = data;
+    } else {
+        // Overwrite existing global staging data
+        db.staging.global = data;
     }
     writeDB(db);
 }
