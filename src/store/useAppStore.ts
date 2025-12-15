@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AppState, Member, Period, WorkLog } from '@/types';
+import { AppState, Member, Period, WorkLog, Plan } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
 
 interface AppStore extends AppState {
@@ -21,6 +21,7 @@ interface AppStore extends AppState {
     getMemberLogs: (memberId: string, periodId: string) => WorkLog[];
     getMemberTotalHours: (memberId: string, periodId: string) => number;
     importState: (state: AppState) => void;
+    mergeImportedData: (data: Partial<Plan>) => void;
 }
 
 export const useAppStore = create<AppStore>()(
@@ -179,6 +180,30 @@ export const useAppStore = create<AppStore>()(
                 return logs.reduce((sum, log) => sum + log.hours, 0);
             },
             importState: (newState) => set(newState),
+            mergeImportedData: (data) =>
+                set((state) => ({
+                    plans: state.plans.map((p) => {
+                        if (p.id !== state.activePlanId) return p;
+
+                        // Helper to merge arrays preventing duplicates by ID (if IDs match)
+                        // Note: If IDs are new UUIDs every time, this won't dedup by content, 
+                        // but it prevents re-adding the exact same object if it was already there.
+                        const merge = <T extends { id: string }>(current: T[], incoming: T[] | undefined) => {
+                            if (!incoming) return current;
+                            const existingIds = new Set(current.map(i => i.id));
+                            const uniqueIncoming = incoming.filter(i => !existingIds.has(i.id));
+                            return [...current, ...uniqueIncoming];
+                        };
+
+                        return {
+                            ...p,
+                            periods: merge(p.periods, data.periods),
+                            members: merge(p.members, data.members),
+                            workLogs: merge(p.workLogs, data.workLogs),
+                            // We purposefully do NOT merge settings to avoid overwriting user preferences
+                        };
+                    }),
+                })),
         }),
         {
             name: 'team-workload-storage',

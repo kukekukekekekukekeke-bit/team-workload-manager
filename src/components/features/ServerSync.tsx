@@ -7,7 +7,7 @@ import { RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 
 export function ServerSync() {
-    const importState = useAppStore(state => state.importState);
+    const mergeImportedData = useAppStore(state => state.mergeImportedData);
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
     const handleSync = async () => {
@@ -21,7 +21,16 @@ export function ServerSync() {
                 throw new Error("Invalid server data format");
             }
 
-            importState(data);
+            const activeServerPlan = data.plans.find((p: any) => p.id === data.activePlanId) || data.plans[0];
+
+            if (activeServerPlan) {
+                mergeImportedData(activeServerPlan);
+            } else if (data.plans && data.plans.length > 0) {
+                // Fallback
+                mergeImportedData(data.plans[0]);
+            }
+            // If no plans on server, do nothing (or show warning?)
+            // setStatus("success");
             setStatus("success");
             setTimeout(() => setStatus("idle"), 2000);
         } catch (e) {
