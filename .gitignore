@@ -44,3 +44,4 @@ next-env.d.ts
 # データファイルはリポジトリに含めない
 periods.csv
 db.json
+sample_workload copy.csv

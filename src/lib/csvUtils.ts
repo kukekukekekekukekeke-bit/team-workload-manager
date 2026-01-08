@@ -42,6 +42,9 @@ export function parseWorkloadCSV(csvContent: string): CSVWorkloadRow[] {
 
         // 工数列をパース
         const hours = hourStrings.map((h, idx) => {
+            if (h.trim() === '') {
+                return 0;
+            }
             const num = parseFloat(h);
             if (isNaN(num)) {
                 throw new Error(`行 ${i + 2}, 列 ${idx + 5}: 工数が数値ではありません: "${h}"`);
@@ -149,12 +152,14 @@ export function convertCSVToWorkLogs(
 /**
  * 作業タイプを正規化
  */
-function normalizeWorkType(workType: string): 'project' | 'feature' {
+function normalizeWorkType(workType: string): 'project' | 'feature' | 'leave' {
     const normalized = workType.toLowerCase().trim();
     if (normalized === 'project' || normalized === 'プロジェクト') {
         return 'project';
     } else if (normalized === 'feature' || normalized === 'フィーチャー' || normalized === '機能') {
         return 'feature';
+    } else if (normalized === 'leave' || normalized === '休み' || normalized === '休暇') {
+        return 'leave';
     }
     // デフォルトはproject
     return 'project';

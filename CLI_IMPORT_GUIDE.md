@@ -103,3 +103,30 @@ To apply the imported data:
 - **Members**: New members are added. / 新しいメンバーは追加されます。
 - **WorkLogs**: New work logs are added. / 新しいWorkLogは追加されます。
 - **Note**: The sync process performs a **Merge**, not a full replacement. Your existing manual edits in the browser are preserved unless they conflict directly with new data IDs. / 同期プロセスは完全な置換ではなく**マージ**を行います。ブラウザでの手動編集内容は、新しいデータのIDと直接競合しない限り保持されます。
+
+### 5. CSV Format Specifications / CSVフォーマット仕様
+
+#### Workload CSV Format
+| Column 1 (Type) | Column 2 (Project) | Column 3 (Task) | Column 4 (Member) | Column 5+ (Periods) |
+|---|---|---|---|---|
+| 作業分類 | 案件名 | 作業内容 | メンバー名 | 各Periodの工数 |
+
+**Special Handling / 特別な処理:**
+
+1.  **Empty Values (Zero-Filling) / 空の値（ゼロ埋め）**
+    *   If a workload cell (Column 5+) is left empty, it is automatically treated as `0`. work log entries with `0` hours are skipped/not created.
+    *   工数セル（5列目以降）が空欄の場合、自動的に `0` として扱われます。`0` 時間のデータは作成されません。
+
+2.  **Leave/Holiday Registration / 休暇・休みの登録**
+    *   To register leave/time-off, specify one of the following keywords in **Column 1 (Type)**:
+        *   `leave`
+        *   `休み`
+        *   `休暇`
+    *   When recognized as leave, the values in the Period columns are treated as leave hours.
+    *   **1列目（作業分類）** に `leave`, `休み`, `休暇` のいずれかを指定すると、その行は「休暇」として扱われ、工数が休暇時間として登録されます。
+
+3.  **Column Mapping / 列のマッピング**
+    *   Mapping is based on **Column Order (Index)**, NOT Header Names.
+    *   Column 5 maps to Period 1, Column 6 to Period 2, and so on.
+    *   マッピングはヘッダー名ではなく**列の順番（インデックス）**に基づきます。
+    *   5列目はシステムの1番目のPeriod、6列目は2番目のPeriod...という順で割り当てられます。
